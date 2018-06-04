@@ -5,9 +5,13 @@ use <involute.scad>
 //motor(holes=true);
 
 //assembly();
-hour_gear();
-minute_gear();
-second_gear();
+//hour_gear();
+//minute_gear();
+//second_gear();
+
+sun_gear(second_sun_teeth);
+sun_gear(minute_sun_teeth);
+!sun_gear(hour_sun_teeth);
 
 font = "Castellar";
 
@@ -18,10 +22,10 @@ pitch = 5;
 steps = 7;  //smoothness of gear
 height = 10;
 fn = 18;
-wall=1;
+wall=2;
 tol = .2;
 
-$fn=90;
+ring_thick=6.15;
 
 second_sun_teeth = 11;
 second_ring_teeth = 19;
@@ -49,6 +53,28 @@ motor_wire_jut_length = 17.5;
 motor_shaft_offset = 8;
 motor_shaft_rad = 5/2;
 motor_shaft_length = 10;
+motor_shaft_flat = 1;
+slop = .2;
+
+module sun_gear(teeth = 7){
+    height = ring_thick+wall*4;
+    rad = gear_diameter(teeth, pitch)/2;
+    
+    difference(){
+        union(){
+            for(i=[0:1]) mirror([0,0,i]) translate([0,0,-height*i]) cylinder(r1=rad, r2=rad-wall*2, h=wall*2);
+            
+            gear(n=teeth,p=pitch,b=0,s=steps,t=tol,h=height,chamfer=false,spindle=0,helix=0,hole=0,nut=0,spokes=0,hollow=0,wall=wall,fn=fn);
+        }
+        
+        //shaft hole
+        difference(){
+            cylinder(r=motor_shaft_rad+slop, h=height*3, center=true, $fn=36);
+            for(i=[0:1]) mirror([i,0,0]) translate([motor_shaft_rad+slop,0,0]) cube([motor_shaft_flat*2-slop*2, 100, 100], center=true); 
+        }
+    }
+}
+
 
 module hour_gear(){
     projection()
@@ -122,7 +148,7 @@ module circle_text(letter_array=["1", "5", "12"], rad = 30, size=12){
     for(i=[0:len(letter_array)-1]) rotate([0,0,90-i*(360/len(letter_array))]) translate([0,rad,0]) linear_extrude(height=30, center=true)text(letter_array[i], size=size, halign="center", valign="center", font=font);
 }
 
-module hanging_gear(sun_teeth = 7, ring_teeth = 19, ring_wall = 20, sun = true){
+module hanging_gear(sun_teeth = 7, ring_teeth = 19, ring_wall = 20, sun = true, ring=true){
     
     echo("Ring Rad:", gear_diameter(ring_teeth, pitch)/2+ring_wall);
     
@@ -132,12 +158,13 @@ module hanging_gear(sun_teeth = 7, ring_teeth = 19, ring_wall = 20, sun = true){
     
     extra_gap = 1/pitch*3;
     
-    translate([(-gear_diameter(sun_teeth,pitch)+gear_diameter(ring_teeth,pitch))/2,0,0]) rotate([0,0,360/ring_teeth*round(ring_teeth/6)+((ring_teeth%2)?0:180/ring_teeth)-extra_gap/2])
-        difference(){
-            translate([0,0,height/2]) cylinder(r=gear_diameter(ring_teeth, pitch)/2+ring_wall, height/2, center=true);
-            gear(n=ring_teeth,p=pitch,b=0,s=steps,t=-tol,h=height,chamfer=false,spindle=0,helix=0,hole=0,nut=0,spokes=0,hollow=0,wall=wall,fn=fn);
-            rotate([0,0,extra_gap]) gear(n=ring_teeth,p=pitch,b=0,s=steps,t=-tol,h=height,chamfer=false,spindle=0,helix=0,hole=0,nut=0,spokes=0,hollow=0,wall=wall,fn=fn);
-        }
+    if(ring == true)
+        translate([(-gear_diameter(sun_teeth,pitch)+gear_diameter(ring_teeth,pitch))/2,0,0]) rotate([0,0,360/ring_teeth*round(ring_teeth/6)+((ring_teeth%2)?0:180/ring_teeth)-extra_gap/2])
+            difference(){
+                translate([0,0,height/2]) cylinder(r=gear_diameter(ring_teeth, pitch)/2+ring_wall, height/2, center=true, $fn=90);
+                gear(n=ring_teeth,p=pitch,b=0,s=steps,t=-tol,h=height,chamfer=false,spindle=0,helix=0,hole=0,nut=0,spokes=0,hollow=0,wall=wall,fn=fn);
+                rotate([0,0,extra_gap]) gear(n=ring_teeth,p=pitch,b=0,s=steps,t=-tol,h=height,chamfer=false,spindle=0,helix=0,hole=0,nut=0,spokes=0,hollow=0,wall=wall,fn=fn);
+            }
     }
 }
 
