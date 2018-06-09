@@ -9,9 +9,9 @@ use <involute.scad>
 //minute_gear();
 //second_gear();
 
-sun_gear(second_sun_teeth);
+!sun_gear(second_sun_teeth);
 sun_gear(minute_sun_teeth);
-!sun_gear(hour_sun_teeth);
+sun_gear(hour_sun_teeth);
 
 font = "Castellar";
 
@@ -25,7 +25,7 @@ fn = 18;
 wall=2;
 tol = .2;
 
-ring_thick=6.15;
+ring_thick=5.15;
 
 second_sun_teeth = 11;
 second_ring_teeth = 19;
@@ -51,26 +51,30 @@ motor_screw_tab_rad = 7/2;
 motor_wire_jut_width = 14.5;
 motor_wire_jut_length = 17.5;
 motor_shaft_offset = 8;
-motor_shaft_rad = 5/2;
+motor_shaft_rad = 5/2-.1;
 motor_shaft_length = 10;
-motor_shaft_flat = 1;
+motor_shaft_flat = 1.1;
 slop = .2;
 
 module sun_gear(teeth = 7){
-    height = ring_thick+wall*4;
+    height = ring_thick+wall*2;
     rad = gear_diameter(teeth, pitch)/2;
     
     difference(){
         union(){
-            for(i=[0:1]) mirror([0,0,i]) translate([0,0,-height*i]) cylinder(r1=rad, r2=rad-wall*2, h=wall*2);
+            for(i=[0:1]) mirror([0,0,i]) translate([0,0,-height*i]) cylinder(r1=rad, r2=rad-wall*2, h=wall, $fn=teeth);
             
-            gear(n=teeth,p=pitch,b=0,s=steps,t=tol,h=height,chamfer=false,spindle=0,helix=0,hole=0,nut=0,spokes=0,hollow=0,wall=wall,fn=fn);
+            translate([0,0,0]) gear(n=teeth,p=pitch,b=0,s=steps,t=tol,h=height,chamfer=false,spindle=0,helix=0,hole=0,nut=0,spokes=0,hollow=0,wall=wall,fn=fn);
         }
         
         //shaft hole
         difference(){
-            cylinder(r=motor_shaft_rad+slop, h=height*3, center=true, $fn=36);
+            union(){
+                translate([0,0,-.1]) cylinder(r1=motor_shaft_rad+slop*3, r2=motor_shaft_rad+slop, h=slop*2);
+                cylinder(r=motor_shaft_rad+slop, h=height*3, center=true, $fn=36);
+            }
             for(i=[0:1]) mirror([i,0,0]) translate([motor_shaft_rad+slop,0,0]) cube([motor_shaft_flat*2-slop*2, 100, 100], center=true); 
+                
         }
     }
 }
