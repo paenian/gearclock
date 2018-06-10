@@ -63,24 +63,52 @@ hour_spr = motor_steps*79.0/17.0
 
 
 
-stepper = QuickStepper(board.D10, board.D11, board.D12, board.D13)
+second_stepper = QuickStepper(board.D10, board.D11, board.D12, board.D13)
+minute_stepper = QuickStepper(board.A0, board.A1, board.A2, board.A3)
+hour_stepper = QuickStepper(board.A4, board.A5, board.SCK, board.MOSI)
+
+
 old_seconds = rtc.datetime.tm_sec
 old_minutes = rtc.datetime.tm_min
-old_hour = rtc.datetime.tm_hour
+old_hours = rtc.datetime.tm_hour
+
 second_error = 0
 minute_error = 0
 hour_error = 0
+
+tics = 0
 while True:
 	print(rtc.datetime)
+	print(dir(board))
 	timenow = rtc.datetime
 	seconds = timenow.tm_sec
+	minutes = timenow.tm_min
+	hours = timenow.tm_hour
 
-	if seconds != old_seconds:
+	# move the second hand
+	if seconds != old_seconds :
+		if seconds < old_seconds :
+			seconds += 60
+		tics = seconds - old_seconds
 		old_seconds = seconds
-		stepper.steps(math.floor(second_spr/60), .005)
-		second_error += second_spr/60 - math.floor(second_spr/60)
-		if second_error > 1.0:
-			stepper.onestep()
-			second_error -= 1
 
+		
+
+		# don't need to worry about hour tics... if we skip an hour something superbad is wrong
+		if hours != old_hours :
+			hour_stepper.steps(math.floor((hour_spr+hour_error)/60), .0025)
+			hour_error = (hour_spr+hour_error)/60 - math.floor((hour_spr+hour_error)/60)
+			old_hours = hours
+
+		if minutes != old_minutes :
+			minute_stepper.steps(math.floor((minute_spr+minute_error)/60), .0025)
+			minute_error = (minute_spr+minute_error)/60 - math.floor((minute_spr+minute_error)/60)
+			old_minutes = minutes
+
+		# step the seconds last :-)
+		second_stepper.steps(math.floor((tics*second_spr+second_error)/60), .0025)
+		second_error = ((tics*second_spr+second_error)/60) - math.floor((tics*second_spr+second_error)/60)
+		
+ # pins:
+ # ['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'SCK', 'MOSI', 'MISO', 'D0', 'RX', 'D1', 'TX', 'SDA', 'SCL', 'D5', 'D6', 'D9', 'D10', 'D11', 'D12', 'D13', 'NEOPIXEL']
 
