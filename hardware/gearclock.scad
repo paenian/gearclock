@@ -4,13 +4,13 @@ use <involute.scad>
 
 //motor(holes=true);
 
-assembly();
+//assembly();
 //hour_gear();
 //minute_gear();
 //second_gear();
 
 //sun_gear(second_sun_teeth);
-//sun_gear(minute_sun_teeth);
+sun_gear(minute_sun_teeth);
 //sun_gear(hour_sun_teeth);
 
 font = "Castellar";
@@ -53,7 +53,7 @@ motor_wire_jut_length = 17.5;
 motor_shaft_offset = 8;
 motor_shaft_rad = 5/2-.1;
 motor_shaft_length = 10;
-motor_shaft_flat = 1.1;
+motor_shaft_flat = 1.075;
 slop = .2;
 
 module sun_gear(teeth = 7){
@@ -70,7 +70,7 @@ module sun_gear(teeth = 7){
         //shaft hole
         difference(){
             union(){
-                translate([0,0,-.1]) cylinder(r1=motor_shaft_rad+slop*3, r2=motor_shaft_rad+slop, h=slop*2);
+                translate([0,0,-.1]) cylinder(r1=motor_shaft_rad+slop*4, r2=motor_shaft_rad+slop, h=slop*2);
                 cylinder(r=motor_shaft_rad+slop, h=height*3, center=true, $fn=36);
             }
             for(i=[0:1]) mirror([i,0,0]) translate([motor_shaft_rad+slop,0,0]) cube([motor_shaft_flat*2-slop*2, 100, 100], center=true); 
@@ -122,26 +122,29 @@ module mount(){
         union(){
             //body
             hull(){
-                cylinder(r=motor_screw_sep/2+wall*2, h=motor_height+wall*2);
+                translate([-motor_shaft_offset,0,0]) cylinder(r=motor_screw_sep/2+wall*2, h=motor_height+wall*2);
                 translate([-(-gear_diameter(hour_sun_teeth,pitch)+gear_diameter(hour_ring_teeth,pitch))/2+motor_shaft_offset-minute_lift-hour_lift,0,0]) cylinder(r=motor_screw_sep/2+wall*2, h=motor_height+wall*2);
             }
             
             //hanger
-            translate([-(-gear_diameter(hour_sun_teeth,pitch)+gear_diameter(hour_ring_teeth,pitch))/2+motor_shaft_offset-minute_lift-hour_lift-motor_rad-wall*5,0,0]) cylinder(r=11, h=wall*3);
+            translate([-(-gear_diameter(hour_sun_teeth,pitch)+gear_diameter(hour_ring_teeth,pitch))/2+motor_shaft_offset-minute_lift-hour_lift-motor_rad-wall*4,0,0]) cylinder(r=8, h=wall*3);
         }
         
         //hanger
-        translate([-(-gear_diameter(hour_sun_teeth,pitch)+gear_diameter(hour_ring_teeth,pitch))/2+motor_shaft_offset-minute_lift-hour_lift-motor_rad-wall*5,0,0]) cylinder(r=5, h=wall*41, center=true);
+        translate([-(-gear_diameter(hour_sun_teeth,pitch)+gear_diameter(hour_ring_teeth,pitch))/2+motor_shaft_offset-minute_lift-hour_lift-motor_rad-wall*4,0,0]) {
+            cylinder(r=4, h=wall*41, center=true);
+            translate([0,0,wall*3]) cylinder(r=7, h=50);
+        }
         
         //make the whole thing a slot
         hull(){
-            cylinder(r=motor_rad-wall, h=motor_height*3, center=true);
+            translate([-motor_shaft_offset/2,0,0]) cylinder(r=motor_rad-wall, h=motor_height*3, center=true);
             translate([-(-gear_diameter(hour_sun_teeth,pitch)+gear_diameter(hour_ring_teeth,pitch))/2+motor_shaft_offset-minute_lift-hour_lift,0,0]) cylinder(r=motor_rad-1, h=motor_height*3, center=true);
         }
             
         //motor cutouts
         for(i=[0:.9:wall+1]) translate([0,0,i]) {
-            render() translate([-(-gear_diameter(second_sun_teeth,pitch)+gear_diameter(second_ring_teeth,pitch))/2+motor_shaft_offset, 0,wall]) rotate([0,0,90]) motor(holes=true);
+            #render() translate([-(-gear_diameter(second_sun_teeth,pitch)+gear_diameter(second_ring_teeth,pitch))/2+motor_shaft_offset, 0,wall]) rotate([0,0,90]) motor(holes=true);
             render() translate([-(-gear_diameter(minute_sun_teeth,pitch)+gear_diameter(minute_ring_teeth,pitch))/2+motor_shaft_offset-minute_lift,0,wall]) rotate([0,0,90]) motor(holes=true);
             render() translate([-(-gear_diameter(hour_sun_teeth,pitch)+gear_diameter(hour_ring_teeth,pitch))/2+motor_shaft_offset-minute_lift-hour_lift,0,wall]) rotate([0,0,90]) motor(holes=true);
         }
