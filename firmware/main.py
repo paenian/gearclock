@@ -8,7 +8,8 @@ import math
  # initialize the i2c bus and the clock chip
 i2c = busio.I2C(board.SCL, board.SDA)
 rtc = adafruit_ds3231.DS3231(i2c)
-rtc.datetime = time.struct_time((2017, 1, 1, 0, 0, 0, 6, 1, -1))
+rtc.datetime = time.struct_time((2017, 1, 1, 5, 58, 55, 6, 1, -1))
+
 
  # class for moving the stepper motor... it's basic.
 class QuickStepper:
@@ -18,7 +19,7 @@ class QuickStepper:
 	maxStep = 4
 
 	def __init__(self, pin0, pin1, pin2, pin3):
-		print("Running init")
+		print("Running stepper init")
 		self.rawpins = [pin0, pin1, pin2, pin3]
 		self.pins = [digitalio.DigitalInOut(pin0),
 			digitalio.DigitalInOut(pin1),
@@ -67,7 +68,6 @@ second_stepper = QuickStepper(board.D10, board.D11, board.D12, board.D13)
 minute_stepper = QuickStepper(board.A0, board.A1, board.A2, board.A3)
 hour_stepper = QuickStepper(board.A4, board.A5, board.SCK, board.MOSI)
 
-
 old_seconds = rtc.datetime.tm_sec
 old_minutes = rtc.datetime.tm_min
 old_hours = rtc.datetime.tm_hour
@@ -78,35 +78,33 @@ hour_error = 0
 
 tics = 0
 while True:
-	print(rtc.datetime)
-	print(dir(board))
 	timenow = rtc.datetime
 	seconds = timenow.tm_sec
 	minutes = timenow.tm_min
 	hours = timenow.tm_hour
+	
+	if hours != old_hours :
+		print("hours: " + str(hours) + " old_hours: " + str(old_hours) + " error: " + str(hour_error))
+		hour_stepper.steps(math.floor((hour_spr+hour_error)/24), .005)
+		hour_error = (hour_spr+hour_error)/24 - math.floor((hour_spr+hour_error)/24)
+		old_hours = hours
+
+	if minutes != old_minutes :
+		print("minutes: " + str(minutes) + " old_minutes: " + str(old_minutes) + " error: " + str(minute_error))
+		minute_stepper.steps(math.floor((minute_spr+minute_error)/60), .005)
+		minute_error = (minute_spr+minute_error)/60 - math.floor((minute_spr+minute_error)/60)
+		old_minutes = minutes
 
 	# move the second hand
 	if seconds != old_seconds :
+		print("seconds: " + str(seconds) + " old_seconds: " + str(old_seconds) + " error: " + str(second_error))
 		if seconds < old_seconds :
-			seconds += 60
+			old_seconds -= 60
 		tics = seconds - old_seconds
 		old_seconds = seconds
-
+		print("tics: " + str(tics) + "\n")
 		
-
-		# don't need to worry about hour tics... if we skip an hour something superbad is wrong
-		if hours != old_hours :
-			hour_stepper.steps(math.floor((hour_spr+hour_error)/60), .0025)
-			hour_error = (hour_spr+hour_error)/60 - math.floor((hour_spr+hour_error)/60)
-			old_hours = hours
-
-		if minutes != old_minutes :
-			minute_stepper.steps(math.floor((minute_spr+minute_error)/60), .0025)
-			minute_error = (minute_spr+minute_error)/60 - math.floor((minute_spr+minute_error)/60)
-			old_minutes = minutes
-
-		# step the seconds last :-)
-		second_stepper.steps(math.floor((tics*second_spr+second_error)/60), .0025)
+		second_stepper.steps(math.floor((tics*second_spr+second_error)/60), .005)
 		second_error = ((tics*second_spr+second_error)/60) - math.floor((tics*second_spr+second_error)/60)
 		
  # pins:
