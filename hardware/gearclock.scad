@@ -7,11 +7,11 @@ in = 25.4;
 
 //assembly();
 
-mount();
+//mount();
 
-//hour_gear();
-//minute_gear();
-//second_gear();
+hour_gear();
+minute_gear();
+second_gear();
 
 //sun_gear(second_sun_teeth);
 //sun_gear(minute_sun_teeth);
@@ -37,7 +37,7 @@ second_ring_wall = 20;
 
 minute_sun_teeth = 13;
 minute_ring_teeth = 47;
-minute_ring_wall = 25;
+minute_ring_wall = 29;
 minute_lift = 25;
 
 hour_sun_teeth = 17;
@@ -134,7 +134,7 @@ module hour_gear(){
     translate([-minute_lift-hour_lift,0,0]) difference(){
         hanging_gear(sun_teeth = hour_sun_teeth, ring_teeth = hour_ring_teeth, ring_wall = hour_ring_wall, sun=false, extra_tol=tol*2);
         
-        circle_text(["24", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"], rad = gear_diameter(hour_ring_teeth, pitch)/2+hour_ring_wall/4+2, size=15);
+        circle_text(["24", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"], rad = gear_diameter(hour_ring_teeth, pitch)/2+hour_ring_wall/4+2, size=19);
     }
 }
 
@@ -150,7 +150,13 @@ module minute_gear(){
         "20", "22", "24", "26", "28",
         "30", "32", "34", "36", "38",
         "40", "42", "44", "46", "48",
-        "50", "52", "54", "56", "58"], rad = gear_diameter(minute_ring_teeth, pitch)/2+minute_ring_wall/2+1, size=10);
+        "50", "52", "54", "56", "58"], rad = gear_diameter(minute_ring_teeth, pitch)/2+minute_ring_wall/2-3, size=9);
+        rotate([0,0,-180/30]) circle_text(["1", "3", "5", "7", "9",
+        "11", "13", "15", "17", "19",
+        "21", "23", "25", "27", "29",
+        "31", "33", "35", "37", "39",
+        "41", "43", "45", "47", "49",
+        "51", "53", "55", "57", "59"], rad = gear_diameter(minute_ring_teeth, pitch)/2+minute_ring_wall/2+5, size=9);
     }
 }
 
@@ -161,7 +167,11 @@ module second_gear(){
         hanging_gear(sun_teeth = second_sun_teeth, ring_teeth = second_ring_teeth, ring_wall = second_ring_wall, sun=false);
         
         //text ring
-        circle_text(["60", "5", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], rad = gear_diameter(second_ring_teeth, pitch)/2+second_ring_wall/2+1, size=8);
+        circle_text(["S", "C", "A", "R", "L",
+        "E", "T", " ", "V", "A",
+        "L", "E", "N", "T", "I",
+        "N", "A", " ", "C", "H",
+        "A", "S", "E", " ", " "], rad = gear_diameter(second_ring_teeth, pitch)/2+second_ring_wall/2+1, size=8);
     }
 }
 
