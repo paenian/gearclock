@@ -7,14 +7,14 @@ in = 25.4;
 
 //assembly();
 
-mount();
+//mount();
 
 //hour_gear();
 //minute_gear();
 //second_gear();
 
 //sun_gear(second_sun_teeth);
-//sun_gear(minute_sun_teeth);
+sun_gear(minute_sun_teeth);
 //sun_gear(hour_sun_teeth);
 
 font = "Times New Roman:style=Bold";
@@ -91,7 +91,7 @@ module assembly(){
     }
 }
 
-module sun_gear(teeth = 7, num_spirals = 5, start = 4, end = 10){
+module sun_gear(teeth = 7, num_spirals = 5, start = 4, end = 10, spiral = true, tangledsun = false, atom=false){
     height = ring_thick+wall*2;
     rad = gear_diameter(teeth, pitch)/2;
     
@@ -100,6 +100,10 @@ module sun_gear(teeth = 7, num_spirals = 5, start = 4, end = 10){
             for(i=[0:1]) mirror([0,0,i]) translate([0,0,-height*i]) cylinder(r1=rad, r2=rad-wall*2, h=wall, $fn=teeth);
             
             translate([0,0,0]) gear(n=teeth,p=pitch,b=0,s=steps,t=tol,h=height,chamfer=false,spindle=0,helix=0,hole=0,nut=0,spokes=0,hollow=0,wall=wall,fn=fn);
+            
+            if(tangledsun == true){
+                cylinder(r=gear_diameter(teeth, pitch)/3, h=height*2);
+            }
         }
         
         //shaft hole
@@ -113,17 +117,32 @@ module sun_gear(teeth = 7, num_spirals = 5, start = 4, end = 10){
         }
         
         //spiral
-        difference(){
-            cylinder(r=gear_diameter(teeth, pitch)/2-pitch-wall,h=height*3, center=true);
-            translate([0,0,-height*4]) {
-                render() linear_extrude(height*9, scale = 1, twist = 0) 
-                    for(i = [0:360 / num_spirals:360]) {
-                        rotate(i) golden_spiral(start, end, true, 3);
-                    }
-                cylinder(r=motor_shaft_rad+wall, h=height*9);
+       if(spiral == true)
+           difference(){
+               cylinder(r=gear_diameter(teeth, pitch)/2-pitch-wall+wall/2,h=height*5, center=true);
+               translate([0,0,-height*4]) {
+                   render() linear_extrude(height*9, scale = 1, twist = 0) 
+                        for(i = [0:360 / num_spirals:360]) {
+                            rotate(i) golden_spiral(start, end, true, 2.5);
+                        }
+                   cylinder(r=motor_shaft_rad+wall, h=height*9);
+                }
             }
-            
-        }
+       if(tangledsun == true)
+           difference(){
+               cylinder(r=gear_diameter(teeth, pitch)/2-pitch-wall+wall/2,h=height*5, center=true);
+               scale([.37,.37,1.75]) translate([2.5,-.75,0]) import("tangledsun.stl");
+           }
+           
+       if(atom == true)
+           difference(){
+               cylinder(r=gear_diameter(teeth, pitch)/2-pitch-wall+wall/2,h=height*5, center=true);
+               union(){
+                   scale([1.9,1.9,4]) translate([0,0,-1]) import("atom_pendant.stl");
+                   translate([0,0,1]) sphere(r=7);
+               }
+           }
+        
     }
 }
 
